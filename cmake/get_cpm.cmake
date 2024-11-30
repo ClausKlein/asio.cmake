@@ -2,6 +2,15 @@
 #
 # SPDX-FileCopyrightText: Copyright (c) 2019-2023 Lars Melchior and contributors
 
+# CMake will end its processing of the current file at the location of the include_guard command if
+# the current file has already been processed
+include_guard(GLOBAL)
+
+# Include CPM only if not already initialized
+if(CPM_INITIALIZED)
+  return()
+endif()
+
 set(CPM_DOWNLOAD_VERSION 0.40.2)
 set(CPM_HASH_SUM "c8cdc32c03816538ce22781ed72964dc864b2a34a310d3b7104812a5ca2d835d")
 
