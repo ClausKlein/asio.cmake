@@ -19,7 +19,7 @@
 # OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-cmake_minimum_required(VERSION 3.25...3.31)
+cmake_minimum_required(VERSION 3.14...3.31)
 
 project(
   asio.cmake
@@ -73,6 +73,8 @@ endif()
 
 # Configure ##
 
+set(CMAKE_DEBUG_POSTFIX D)
+
 add_library(asio STATIC src/asio.cpp)
 add_library(asio::asio ALIAS asio)
 target_include_directories(
@@ -80,14 +82,18 @@ target_include_directories(
               $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
-find_package(Threads)
-target_link_libraries(asio PRIVATE Threads::Threads)
+find_package(Threads REQUIRED)
+target_link_libraries(asio PUBLIC Threads::Threads)
 
 target_compile_features(asio PUBLIC cxx_std_11)
 target_compile_definitions(
   asio PUBLIC -DASIO_STANDALONE -DASIO_SEPARATE_COMPILATION
               $<$<BOOL:${ASIO_NO_DEPRECATED}>:ASIO_NO_DEPRECATED>
 )
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+  target_compile_options(asio PRIVATE -Wall -Wextra -Wpedantic -Werror -Wshadow)
+endif()
 
 # Fix warning : "Please define _WIN32_WINNT or _WIN32_WINDOWS appropriately."
 # https://stackoverflow.com/questions/9742003/platform-detection-in-cmake
@@ -114,8 +120,11 @@ endif()
 
 # Install ##
 
+# Print Installing but not Up-to-date messages.
+set(CMAKE_INSTALL_MESSAGE LAZY)
+
 if(ASIO_ENABLE_INSTALL)
-  CPMAddPackage("gh:TheLartians/PackageProject.cmake@1.9.0")
+  CPMAddPackage("gh:TheLartians/PackageProject.cmake@1.12.0")
   packageProject(
     NAME asio
     VERSION ${ASIO_VERSION}
@@ -123,7 +132,7 @@ if(ASIO_ENABLE_INSTALL)
     BINARY_DIR ${PROJECT_BINARY_DIR}
     INCLUDE_DIR ${asio_SOURCE_DIR}/asio/include
     INCLUDE_DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-    INCLUDE_HEADER_PATTERN "*.hpp"
+    INCLUDE_HEADER_PATTERN "*.hpp *.ipp"
     DISABLE_VERSION_SUFFIX YES
     COMPATIBILITY SameMajorVersion
     DEPENDENCIES "Threads"
