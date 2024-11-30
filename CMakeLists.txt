@@ -19,7 +19,7 @@
 # OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-cmake_minimum_required(VERSION 3.21...3.24)
+cmake_minimum_required(VERSION 3.25...3.31)
 
 project(
   asio.cmake
@@ -32,16 +32,10 @@ set(ASIO_REPOSITORY
     CACHE STRING "asio git repository url"
 )
 set(ASIO_TAG
-    "asio-1-31-0"
+    "asio-1-32-0"
     CACHE STRING "asio git tag"
 )
 
-option(ASIO_USE_CPM "Download Asio with CPM instead of FetchContent" ON)
-option(
-  ASIO_CPM_FETCHCONTENT_COMPAT
-  "Should asio be declared with FetchContent functions to be compatible. This doesn't not allow CPM cache to work."
-  OFF
-)
 option(ASIO_NO_DEPRECATED "Disables Asio deprecated interfaces and functionality" ON)
 option(ASIO_ENABLE_EXAMPLES "add one example to test binding/compilation" ${PROJECT_IS_TOP_LEVEL})
 option(ASIO_ENABLE_INSTALL "Install the asio standalone library" ${PROJECT_IS_TOP_LEVEL})
@@ -51,7 +45,7 @@ include(GNUInstallDirs) # for CMAKE_INSTALL_INCLUDEDIR
 # Download ##
 
 include(cmake/CPM.cmake)
-
+set(CPM_USE_LOCAL_PACKAGES OFF)
 CPMAddPackage(
   NAME asio
   GIT_REPOSITORY ${ASIO_REPOSITORY}
@@ -91,7 +85,8 @@ target_link_libraries(asio PRIVATE Threads::Threads)
 
 target_compile_features(asio PUBLIC cxx_std_11)
 target_compile_definitions(
-  asio PUBLIC -DASIO_STANDALONE -DASIO_SEPARATE_COMPILATION $<$<BOOL:${ASIO_NO_DEPRECATED}>:ASIO_NO_DEPRECATED>
+  asio PUBLIC -DASIO_STANDALONE -DASIO_SEPARATE_COMPILATION
+              $<$<BOOL:${ASIO_NO_DEPRECATED}>:ASIO_NO_DEPRECATED>
 )
 
 # Fix warning : "Please define _WIN32_WINNT or _WIN32_WINDOWS appropriately."
